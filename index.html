@@ -54,6 +54,13 @@
   /* detail */
   .back{background:none;border:none;color:var(--accent2);font-size:15px;font-weight:700;
     padding:6px 0;cursor:pointer;display:flex;align-items:center;gap:4px}
+  .detailnav{display:flex;gap:6px;align-items:stretch;margin:4px 0 2px}
+  .navbtn{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:10px;padding:9px 10px;font-size:12px;font-weight:700;cursor:pointer;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .navbtn:active{transform:scale(.97)}
+  .navbtn.ghost{background:transparent;border-color:transparent;cursor:default}
+  .navbtn.home{flex:0 0 auto;color:var(--accent);font-size:16px;padding:9px 14px}
   .hero{background:var(--panel);border:1px solid var(--line);border-radius:18px;
     padding:16px;text-align:center;margin-top:6px}
   .hero img{width:150px;height:150px;image-rendering:pixelated}
@@ -220,7 +227,7 @@ function renderNode(node, currentId){
 }
 
 function openMon(id){location.hash="#/"+id;}
-function goHome(){location.hash="";}
+function goHome(){search.value="";location.hash="";if(!location.hash)route();}
 
 function detailView(id){
   const p=DB.pokemon[id];
@@ -233,8 +240,14 @@ function detailView(id){
     <div class="evo"><div class="evoline">${p.forms.map(f=>`
       <div class="emon"><img src="${f.sprite}" alt=""><small>${f.name[lang]||f.name.en}</small>
         <div class="types" style="margin-top:4px">${f.types.map(typeChip).join("")}</div></div>`).join("")}</div></div>`:"";
+  const prev=neighbor(id,-1), next=neighbor(id,1);
+  const navBtn=(nid,dir)=>nid?`<button class="navbtn" onclick="openMon(${nid})">${dir<0?"‹ ":""}${pad(nid)} ${nm(nid)}${dir>0?" ›":""}</button>`:`<span class="navbtn ghost"></span>`;
   app.innerHTML=`
-    <button class="back" onclick="goHome()">‹ ${UI[lang].back}</button>
+    <div class="detailnav">
+      ${navBtn(prev,-1)}
+      <button class="navbtn home" onclick="goHome()" title="${UI[lang].back}">☰</button>
+      ${navBtn(next,1)}
+    </div>
     <div class="hero">
       <div class="dexno" style="text-align:left">${pad(id)}</div>
       <img src="${p.sprite}" alt="">
@@ -251,20 +264,41 @@ function detailView(id){
   window.scrollTo(0,0);
 }
 
-function route(){
-  const h=location.hash.replace(/^#\/?/,"");
-  if(h&&/^\d+$/.test(h)){search.style.display="none";detailView(Number(h));}
-  else{search.style.display="";listView(search.value);}
+let DEX=[]; // sorted base-dex ids, for prev/next navigation
+function neighbor(id,dir){
+  const i=DEX.indexOf(Number(id));
+  if(i<0)return null;
+  const j=i+dir;
+  return (j>=0&&j<DEX.length)?DEX[j]:null;
 }
 
-search.addEventListener("input",()=>{if(!location.hash.replace(/^#\/?/,"")) listView(search.value);});
+function route(){
+  const h=location.hash.replace(/^#\/?/,"");
+  if(h&&/^\d+$/.test(h)) detailView(Number(h)); // search bar now stays visible everywhere
+  else listView(search.value);
+}
+
+// typing anywhere jumps back to the (filtered) list — no need to go back first
+search.addEventListener("input",()=>{
+  if(/^\d+$/.test(location.hash.replace(/^#\/?/,""))) location.hash=""; // -> route() renders list
+  listView(search.value);
+});
 window.addEventListener("hashchange",route);
+// keyboard arrows move up/down the dex inside an article
+window.addEventListener("keydown",(e)=>{
+  if(document.activeElement===search)return;
+  const h=location.hash.replace(/^#\/?/,"");
+  if(!/^\d+$/.test(h))return;
+  if(e.key==="ArrowLeft"){const n=neighbor(h,-1);if(n)openMon(n);}
+  if(e.key==="ArrowRight"){const n=neighbor(h,1);if(n)openMon(n);}
+});
 
 async function boot(){
   renderLangs();
   try{
     const res=await fetch("data/pokedex.json");
     DB=await res.json();
+    DEX=Object.keys(DB.pokemon).map(Number).filter(n=>!isNaN(n)&&!DB.pokemon[n].form).sort((a,b)=>a-b);
     route();
   }catch(e){app.innerHTML=`<div class="empty">Failed to load data.<br>${e}</div>`;}
 }
