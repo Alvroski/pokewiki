@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1420" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="sprites/25.png" />
+<title>PokéWiki</title>
+<style>
+  :root{
+    --bg:#0f1420; --panel:#171e2e; --panel2:#1f293d; --line:#2a3650;
+    --txt:#e8ecf5; --muted:#8a97b2; --accent:#ffcb05; --accent2:#3b6cff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  header{
+    position:sticky;top:0;z-index:10;background:rgba(15,20,32,.92);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+    padding:10px 12px;display:flex;gap:8px;align-items:center;
+  }
+  .brand{font-weight:800;color:var(--accent);letter-spacing:.5px;font-size:18px;cursor:pointer}
+  .brand span{color:var(--accent2)}
+  #search{
+    flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:12px;padding:10px 12px;font-size:16px;outline:none;min-width:0;
+  }
+  .langs{display:flex;gap:4px}
+  .lang{
+    background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    border-radius:9px;padding:8px 9px;font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .lang.active{background:var(--accent);color:#0f1420;border-color:var(--accent)}
+  main{max-width:720px;margin:0 auto;padding:10px}
+  /* list */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;
+    transition:transform .08s,border-color .15s;
+  }
+  .card:active{transform:scale(.97)}
+  .card img{width:84px;height:84px;image-rendering:pixelated}
+  .dexno{font-size:11px;color:var(--muted);align-self:flex-start}
+  .cname{font-weight:700;margin-top:2px;text-align:center;font-size:15px}
+  .types{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;justify-content:center}
+  .type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;
+    padding:3px 7px;border-radius:8px;color:#fff}
+  /* detail */
+  .back{background:none;border:none;color:var(--accent2);font-size:15px;font-weight:700;
+    padding:6px 0;cursor:pointer;display:flex;align-items:center;gap:4px}
+  .hero{background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:16px;text-align:center;margin-top:6px}
+  .hero img{width:150px;height:150px;image-rendering:pixelated}
+  .hero h1{margin:4px 0 2px;font-size:26px}
+  .genus{color:var(--muted);font-size:14px}
+  .names{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+  .nrow{display:flex;justify-content:space-between;background:var(--panel2);
+    border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .nrow b{color:var(--muted);font-weight:700;font-size:13px}
+  .sect{margin:18px 0 8px;font-size:13px;font-weight:800;color:var(--muted);
+    text-transform:uppercase;letter-spacing:1px}
+  .sect.primary{color:var(--accent);font-size:15px;margin-top:20px}
+  .evo-main{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 12px}
+  /* evolution */
+  .evo{overflow-x:auto;padding-bottom:6px}
+  .evoline{display:flex;align-items:center;gap:6px;min-width:min-content}
+  .emon{display:flex;flex-direction:column;align-items:center;cursor:pointer;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;min-width:96px}
+  .emon.current{border-color:var(--accent)}
+  .emon.out{opacity:.72}
+  .emon img{width:64px;height:64px;image-rendering:pixelated}
+  .emon small{font-size:12px;font-weight:700;margin-top:2px}
+  .arrow{display:flex;flex-direction:column;align-items:center;color:var(--muted);min-width:70px}
+  .arrow .m{font-size:10px;text-align:center;line-height:1.2;color:var(--accent)}
+  .arrow .a{font-size:18px;line-height:1}
+  .branches{display:flex;flex-direction:column;gap:8px}
+  .branch{display:flex;align-items:center;gap:6px}
+  .empty{color:var(--muted);text-align:center;padding:40px 10px}
+  .foot{color:var(--muted);font-size:11px;text-align:center;padding:16px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand" onclick="goHome()">Poké<span>Wiki</span></div>
+  <input id="search" placeholder="Search…" autocomplete="off" />
+  <div class="langs" id="langs"></div>
+</header>
+<main id="app"><div class="empty">Loading…</div></main>
+
+<script>
+const UI = {
+  en:{search:"Search name…",names:"Names",evo:"Evolution",noevo:"Does not evolve",forms:"Forms & variants",back:"Back"},
+  de:{search:"Name suchen…",names:"Namen",evo:"Entwicklung",noevo:"Entwickelt sich nicht",forms:"Formen & Varianten",back:"Zurück"},
+  es:{search:"Buscar nombre…",names:"Nombres",evo:"Evolución",noevo:"No evoluciona",forms:"Formas y variantes",back:"Atrás"},
+};
+// composes an evolution method into a readable label per language, from structured data
+const M = {
+  en:{lv:n=>"Level "+n,up:"Level up",friend:"High Friendship",affection:"High Affection",beauty:"High Beauty",
+      use:x=>"Use "+x,trade:"Trade",hold:x=>"holding "+x,tradeFor:x=>"for "+x,knows:x=>"Knows "+x,
+      knowsType:x=>"Knows "+x+" move",at:x=>"at "+x,shed:"Empty slot + Poké Ball",rain:"in rain",
+      day:"day",night:"night",f:"♀",m:"♂",special:"Special"},
+  de:{lv:n=>"Level "+n,up:"Levelaufstieg",friend:"Hohe Freundschaft",affection:"Hohe Zuneigung",beauty:"Hohe Schönheit",
+      use:x=>x+" benutzen",trade:"Tausch",hold:x=>"mit "+x,tradeFor:x=>"gegen "+x,knows:x=>"beherrscht "+x,
+      knowsType:x=>"kennt "+x+"-Attacke",at:x=>"bei "+x,shed:"Freier Platz + Poké Ball",rain:"im Regen",
+      day:"Tag",night:"Nacht",f:"♀",m:"♂",special:"Speziell"},
+  es:{lv:n=>"Nivel "+n,up:"Subir de nivel",friend:"Mucha amistad",affection:"Mucho cariño",beauty:"Mucha belleza",
+      use:x=>"Usar "+x,trade:"Intercambio",hold:x=>"con "+x,tradeFor:x=>"por "+x,knows:x=>"conoce "+x,
+      knowsType:x=>"conoce mov. "+x,at:x=>"en "+x,shed:"Hueco libre + Poké Ball",rain:"con lluvia",
+      day:"día",night:"noche",f:"♀",m:"♂",special:"Especial"},
+};
+function composeMethod(m,lang){
+  if(!m)return "";
+  const t=M[lang]||M.en, loc=o=>o?(o[lang]||o.en):"";
+  const p=[];
+  if(m.trigger==="level-up"){
+    if(m.level)p.push(t.lv(m.level));
+    else if(m.friendship)p.push(t.friend);
+    else if(m.affection)p.push(t.affection);
+    else if(m.beauty)p.push(t.beauty);
+    else if(m.move)p.push(t.knows(loc(m.move)));
+    else if(m.moveType)p.push(t.knowsType(loc(m.moveType)));
+    else if(m.location)p.push(t.up+" "+t.at(loc(m.location)));
+    else p.push(t.up);
+  }else if(m.trigger==="trade"){
+    p.push(t.trade);
+    if(m.heldItem)p.push(t.hold(loc(m.heldItem)));
+    if(m.tradeSpecies)p.push(t.tradeFor(loc(m.tradeSpecies)));
+  }else if(m.trigger==="use-item"){p.push(t.use(loc(m.item)));}
+  else if(m.trigger==="shed"){p.push(t.shed);}
+  else{p.push(t.special);}
+  if(m.location&&m.trigger==="level-up"&&!m.level===false){} // location handled above
+  if(m.time)p.push("("+(t[m.time]||m.time)+")");
+  if(m.rain)p.push(t.rain);
+  if(m.heldItem&&m.trigger!=="trade")p.push(t.hold(loc(m.heldItem)));
+  if(m.gender===1)p.push(t.f);
+  if(m.gender===2)p.push(t.m);
+  return p.join(" ");
+}
+const TYPE_COLORS={normal:"#9fa19f",fire:"#e25822",water:"#2d74e0",electric:"#f0b800",grass:"#3aa84a",ice:"#6cd0d6",fighting:"#b02f22",poison:"#8a3fa0",ground:"#c7a23a",flying:"#8aa7e8",psychic:"#e84a7f",bug:"#8aa31f",rock:"#a89a4a",ghost:"#5a4a8a",dragon:"#4a46c7",dark:"#4a3f3a",steel:"#7a8a9a",fairy:"#e89ad0"};
+const TYPE_NAMES={
+  en:{normal:"Normal",fire:"Fire",water:"Water",electric:"Electric",grass:"Grass",ice:"Ice",fighting:"Fighting",poison:"Poison",ground:"Ground",flying:"Flying",psychic:"Psychic",bug:"Bug",rock:"Rock",ghost:"Ghost",dragon:"Dragon",dark:"Dark",steel:"Steel",fairy:"Fairy"},
+  de:{normal:"Normal",fire:"Feuer",water:"Wasser",electric:"Elektro",grass:"Pflanze",ice:"Eis",fighting:"Kampf",poison:"Gift",ground:"Boden",flying:"Flug",psychic:"Psycho",bug:"Käfer",rock:"Gestein",ghost:"Geist",dragon:"Drache",dark:"Unlicht",steel:"Stahl",fairy:"Fee"},
+  es:{normal:"Normal",fire:"Fuego",water:"Agua",electric:"Eléctrico",grass:"Planta",ice:"Hielo",fighting:"Lucha",poison:"Veneno",ground:"Tierra",flying:"Volador",psychic:"Psíquico",bug:"Bicho",rock:"Roca",ghost:"Fantasma",dragon:"Dragón",dark:"Siniestro",steel:"Acero",fairy:"Hada"},
+};
+
+let DB=null, lang=localStorage.getItem("pw_lang")||"en";
+const app=document.getElementById("app");
+const search=document.getElementById("search");
+
+function nm(id){const p=DB.pokemon[id];if(!p)return "#"+id;return p.name[lang]||p.name.en||("#"+id);}
+function pad(id){return "#"+String(id).padStart(3,"0");}
+
+function renderLangs(){
+  const el=document.getElementById("langs");
+  el.innerHTML="";
+  ["en","de","es"].forEach(l=>{
+    const b=document.createElement("div");
+    b.className="lang"+(l===lang?" active":"");
+    b.textContent=l.toUpperCase();
+    b.onclick=()=>{lang=l;localStorage.setItem("pw_lang",l);renderLangs();route();};
+    el.appendChild(b);
+  });
+  search.placeholder=UI[lang].search;
+}
+
+function typeChip(t){
+  return `<span class="type" style="background:${TYPE_COLORS[t]||'#777'}">${(TYPE_NAMES[lang]||TYPE_NAMES.en)[t]||t}</span>`;
+}
+
+function listView(filter=""){
+  const q=filter.trim().toLowerCase();
+  const ids=Object.keys(DB.pokemon)
+    .map(Number)
+    .filter(id=>!DB.pokemon[id].outOfRange) // main dex only in list; cross-gen reachable via chains
+    .filter(id=>{
+      if(!q)return true;
+      const n=DB.pokemon[id].name;
+      return Object.values(n).some(v=>v&&v.toLowerCase().includes(q)) || String(id)===q || pad(id).includes(q);
+    })
+    .sort((a,b)=>a-b);
+  if(!ids.length){app.innerHTML=`<div class="empty">—</div>`;return;}
+  app.innerHTML=`<div class="grid">${ids.map(id=>{
+    const p=DB.pokemon[id];
+    return `<div class="card" onclick="openMon(${id})">
+      <div class="dexno">${pad(id)}</div>
+      <img loading="lazy" src="${p.sprite}" alt="">
+      <div class="cname">${nm(id)}</div>
+      <div class="types">${p.types.map(typeChip).join("")}</div>
+    </div>`;
+  }).join("")}</div>
+  <div class="foot">${DB.count} Pokémon · ${UI[lang].evo} · draft</div>`;
+}
+
+// render evolution tree recursively
+function renderNode(node, currentId){
+  const p=DB.pokemon[node.id];
+  const out=p&&p.outOfRange?" out":"";
+  const cur=node.id===currentId?" current":"";
+  const sprite=p?p.sprite:`sprites/${node.id}.png`;
+  const mon=`<div class="emon${cur}${out}" onclick="openMon(${node.id})">
+      <img src="${sprite}" alt=""><small>${nm(node.id)}</small></div>`;
+  if(!node.to||!node.to.length)return mon;
+  if(node.to.length===1){
+    const c=node.to[0];
+    return `<div class="evoline">${mon}
+      <div class="arrow"><div class="m">${composeMethod(c.method,lang)}</div><div class="a">→</div></div>
+      ${renderNode(c,currentId)}</div>`;
+  }
+  // branching
+  const branches=node.to.map(c=>`<div class="branch">
+      <div class="arrow"><div class="m">${composeMethod(c.method,lang)}</div><div class="a">→</div></div>
+      ${renderNode(c,currentId)}</div>`).join("");
+  return `<div class="evoline">${mon}<div class="branches">${branches}</div></div>`;
+}
+
+function openMon(id){location.hash="#/"+id;}
+function goHome(){location.hash="";}
+
+function detailView(id){
+  const p=DB.pokemon[id];
+  if(!p){app.innerHTML=`<div class="empty">Not found</div>`;return;}
+  const chain=p.chain!=null?DB.chains[p.chain]:null;
+  const hasEvo=chain&&chain.to&&chain.to.length>0;
+  const names=["en","de","es"].map(l=>`<div class="nrow"><b>${l.toUpperCase()}</b><span>${p.name[l]||"—"}</span></div>`).join("");
+  const forms=(p.forms&&p.forms.length)?`
+    <div class="sect">${UI[lang].forms}</div>
+    <div class="evo"><div class="evoline">${p.forms.map(f=>`
+      <div class="emon"><img src="${f.sprite}" alt=""><small>${f.name[lang]||f.name.en}</small>
+        <div class="types" style="margin-top:4px">${f.types.map(typeChip).join("")}</div></div>`).join("")}</div></div>`:"";
+  app.innerHTML=`
+    <button class="back" onclick="goHome()">‹ ${UI[lang].back}</button>
+    <div class="hero">
+      <div class="dexno" style="text-align:left">${pad(id)}</div>
+      <img src="${p.sprite}" alt="">
+      <h1>${nm(id)}</h1>
+      <div class="genus">${(p.genus&&(p.genus[lang]||p.genus.en))||""}</div>
+      <div class="types" style="margin-top:10px">${p.types.map(typeChip).join("")}</div>
+    </div>
+    <div class="sect primary">${UI[lang].evo}</div>
+    <div class="evo evo-main">${hasEvo?`<div class="evoline">${renderNode(chain,id)}</div>`:`<div class="empty">${UI[lang].noevo}</div>`}</div>
+    ${forms}
+    <div class="sect">${UI[lang].names}</div>
+    <div class="names">${names}</div>
+    <div class="foot">${pad(id)}</div>`;
+  window.scrollTo(0,0);
+}
+
+function route(){
+  const h=location.hash.replace(/^#\/?/,"");
+  if(h&&/^\d+$/.test(h)){search.style.display="none";detailView(Number(h));}
+  else{search.style.display="";listView(search.value);}
+}
+
+search.addEventListener("input",()=>{if(!location.hash.replace(/^#\/?/,"")) listView(search.value);});
+window.addEventListener("hashchange",route);
+
+async function boot(){
+  renderLangs();
+  try{
+    const res=await fetch("data/pokedex.json");
+    DB=await res.json();
+    route();
+  }catch(e){app.innerHTML=`<div class="empty">Failed to load data.<br>${e}</div>`;}
+}
+boot();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "PokéWiki",
+  "short_name": "PokéWiki",
+  "description": "Offline Pokémon wiki — names EN/DE/ES, evolution methods, sprites.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1420",
+  "theme_color": "#0f1420",
+  "icons": [
+    { "src": "sprites/25.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
+    { "src": "sprites/25.png", "sizes": "192x192", "type": "image/png", "purpose": "any" }
+  ]
+}
