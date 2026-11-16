@@ -1,6 +1,6 @@
 // PokéWiki service worker — full offline support.
 // On install: cache the shell + data + every sprite listed in the data bundle.
-const CACHE = "pokewiki-v2";
+const CACHE = "pokewiki-v3";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "data/pokedex.json"];
 
 self.addEventListener("install", (e) => {

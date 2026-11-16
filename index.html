@@ -84,7 +84,20 @@
   .emon img{width:64px;height:64px;image-rendering:pixelated}
   .emon small{font-size:12px;font-weight:700;margin-top:2px}
   .arrow{display:flex;flex-direction:column;align-items:center;color:var(--muted);min-width:70px}
-  .arrow .m{font-size:10px;text-align:center;line-height:1.2;color:var(--accent)}
+  .arrow .m{font-size:10px;text-align:center;line-height:1.3;color:var(--accent);max-width:120px}
+  .lc{font-size:11px}
+  .reg{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.5px;color:#fff;
+    padding:1px 5px;border-radius:6px;margin-bottom:2px}
+  .reg-alola{background:#e2862b}.reg-galar{background:#7b3fa0}.reg-hisui{background:#2a9d8f}
+  .reg-paldea{background:#c0392b}.reg-mega{background:#c0398a}.reg-gmax{background:#b02f5a}
+  .arrow .m .reg{display:block;margin:0 auto 2px}
+  .gamenote{background:#141b2b;border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:8px 12px;font-size:12px;color:var(--muted);margin-top:8px}
+  .formgrid{display:flex;flex-wrap:wrap;gap:8px}
+  .emon.form{min-width:92px}
+  .emon.tiny{min-width:74px}.emon.tiny img{width:48px;height:48px}
+  .coswrap{margin-top:10px}
+  .coslabel{font-size:11px;color:var(--muted);margin-bottom:6px}
   .arrow .a{font-size:18px;line-height:1}
   .branches{display:flex;flex-direction:column;gap:8px}
   .branch{display:flex;align-items:center;gap:6px}
@@ -102,53 +115,121 @@
 
 <script>
 const UI = {
-  en:{search:"Search name…",names:"Names",evo:"Evolution",noevo:"Does not evolve",forms:"Forms & variants",back:"Back"},
-  de:{search:"Name suchen…",names:"Namen",evo:"Entwicklung",noevo:"Entwickelt sich nicht",forms:"Formen & Varianten",back:"Zurück"},
-  es:{search:"Buscar nombre…",names:"Nombres",evo:"Evolución",noevo:"No evoluciona",forms:"Formas y variantes",back:"Atrás"},
+  en:{search:"Search name…",names:"Names",evo:"Evolution",noevo:"Does not evolve",forms:"Forms & variants",cosmetic:"cosmetic variants",back:"Back"},
+  de:{search:"Name suchen…",names:"Namen",evo:"Entwicklung",noevo:"Entwickelt sich nicht",forms:"Formen & Varianten",cosmetic:"Design-Varianten",back:"Zurück"},
+  es:{search:"Buscar nombre…",names:"Nombres",evo:"Evolución",noevo:"No evoluciona",forms:"Formas y variantes",cosmetic:"variantes estéticas",back:"Atrás"},
 };
 // composes an evolution method into a readable label per language, from structured data
 const M = {
   en:{lv:n=>"Level "+n,up:"Level up",friend:"High Friendship",affection:"High Affection",beauty:"High Beauty",
       use:x=>"Use "+x,trade:"Trade",hold:x=>"holding "+x,tradeFor:x=>"for "+x,knows:x=>"Knows "+x,
-      knowsType:x=>"Knows "+x+" move",at:x=>"at "+x,shed:"Empty slot + Poké Ball",rain:"in rain",
-      day:"day",night:"night",f:"♀",m:"♂",special:"Special"},
+      knowsType:x=>"Knows "+x+" move",at:x=>"at "+x,with:x=>"with "+x+" in party",withType:x=>"with "+x+"-type in party",
+      shed:"Empty slot + Poké Ball",rain:"in rain",upside:"holding console upside-down",
+      atkGt:"Atk > Def",atkLt:"Atk < Def",atkEq:"Atk = Def",
+      day:"day",night:"night",f:"♀",m:"♂",
+      crit:"Land 3 critical hits in one battle",dmg:"After taking damage (no fainting)",
+      recoil:"After 294+ recoil damage",agile:"Use an Agile-style move 20×",strong:"Use a Strong-style move 20×",
+      towerDark:"Tower of Darkness",towerWater:"Tower of Waters",special:"Special method"},
   de:{lv:n=>"Level "+n,up:"Levelaufstieg",friend:"Hohe Freundschaft",affection:"Hohe Zuneigung",beauty:"Hohe Schönheit",
       use:x=>x+" benutzen",trade:"Tausch",hold:x=>"mit "+x,tradeFor:x=>"gegen "+x,knows:x=>"beherrscht "+x,
-      knowsType:x=>"kennt "+x+"-Attacke",at:x=>"bei "+x,shed:"Freier Platz + Poké Ball",rain:"im Regen",
-      day:"Tag",night:"Nacht",f:"♀",m:"♂",special:"Speziell"},
+      knowsType:x=>"kennt "+x+"-Attacke",at:x=>"bei "+x,with:x=>"mit "+x+" im Team",withType:x=>"mit "+x+"-Typ im Team",
+      shed:"Freier Platz + Poké Ball",rain:"im Regen",upside:"Konsole umgedreht halten",
+      atkGt:"Ang. > Vert.",atkLt:"Ang. < Vert.",atkEq:"Ang. = Vert.",
+      day:"Tag",night:"Nacht",f:"♀",m:"♂",
+      crit:"3 Volltreffer in einem Kampf landen",dmg:"Nach erlittenem Schaden (ohne K.O.)",
+      recoil:"Nach 294+ Rückstoßschaden",agile:"20× eine Flink-Attacke nutzen",strong:"20× eine Stark-Attacke nutzen",
+      towerDark:"Turm der Dunkelheit",towerWater:"Turm des Wassers",special:"Spezielle Methode"},
   es:{lv:n=>"Nivel "+n,up:"Subir de nivel",friend:"Mucha amistad",affection:"Mucho cariño",beauty:"Mucha belleza",
       use:x=>"Usar "+x,trade:"Intercambio",hold:x=>"con "+x,tradeFor:x=>"por "+x,knows:x=>"conoce "+x,
-      knowsType:x=>"conoce mov. "+x,at:x=>"en "+x,shed:"Hueco libre + Poké Ball",rain:"con lluvia",
-      day:"día",night:"noche",f:"♀",m:"♂",special:"Especial"},
+      knowsType:x=>"conoce mov. "+x,at:x=>"en "+x,with:x=>"con "+x+" en el equipo",withType:x=>"con tipo "+x+" en el equipo",
+      shed:"Hueco libre + Poké Ball",rain:"con lluvia",upside:"con la consola al revés",
+      atkGt:"Ata. > Def.",atkLt:"Ata. < Def.",atkEq:"Ata. = Def.",
+      day:"día",night:"noche",f:"♀",m:"♂",
+      crit:"Asestar 3 golpes críticos en un combate",dmg:"Tras recibir daño (sin debilitarse)",
+      recoil:"Tras 294+ daño de retroceso",agile:"Usar 20× un mov. de estilo ágil",strong:"Usar 20× un mov. de estilo fuerte",
+      towerDark:"Torre de la Oscuridad",towerWater:"Torre de las Aguas",special:"Método especial"},
+};
+// games where trade evolutions can be done with a Linking Cord (no trading partner)
+const GAME = {
+  en:{linkcord:"Legends: Arceus, BDSP & Scarlet/Violet: evolve with a Linking Cord — no trade needed."},
+  de:{linkcord:"Legenden: Arceus, SG/LP & Karmesin/Purpur: Entwicklung per Kabelband — kein Tausch nötig."},
+  es:{linkcord:"Leyendas: Arceus, DBPR y Escarlata/Púrpura: evoluciona con un Cable de Unión — sin intercambio."},
 };
 function composeMethod(m,lang){
   if(!m)return "";
   const t=M[lang]||M.en, loc=o=>o?(o[lang]||o.en):"";
   const p=[];
-  if(m.trigger==="level-up"){
+  const trig=m.trigger;
+  if(trig==="level-up"||trig==="other"||!trig){
     if(m.level)p.push(t.lv(m.level));
     else if(m.friendship)p.push(t.friend);
     else if(m.affection)p.push(t.affection);
     else if(m.beauty)p.push(t.beauty);
     else if(m.move)p.push(t.knows(loc(m.move)));
     else if(m.moveType)p.push(t.knowsType(loc(m.moveType)));
+    else if(m.upsideDown)p.push(t.up+" "+t.upside);
     else if(m.location)p.push(t.up+" "+t.at(loc(m.location)));
+    else if(m.partySpecies)p.push(t.up+" "+t.with(loc(m.partySpecies)));
+    else if(m.partyType)p.push(t.up+" "+t.withType(loc(m.partyType)));
     else p.push(t.up);
-  }else if(m.trigger==="trade"){
+    if(m.stats===1)p.push("("+t.atkGt+")");
+    if(m.stats===-1)p.push("("+t.atkLt+")");
+    if(m.stats===0)p.push("("+t.atkEq+")");
+  }else if(trig==="trade"){
     p.push(t.trade);
     if(m.heldItem)p.push(t.hold(loc(m.heldItem)));
     if(m.tradeSpecies)p.push(t.tradeFor(loc(m.tradeSpecies)));
-  }else if(m.trigger==="use-item"){p.push(t.use(loc(m.item)));}
-  else if(m.trigger==="shed"){p.push(t.shed);}
-  else{p.push(t.special);}
-  if(m.location&&m.trigger==="level-up"&&!m.level===false){} // location handled above
+  }else if(trig==="use-item"){p.push(t.use(loc(m.item)));}
+  else if(trig==="shed"){p.push(t.shed);}
+  else if(trig==="three-critical-hits"){p.push(t.crit);}
+  else if(trig==="take-damage"){p.push(t.dmg);}
+  else if(trig==="recoil-damage"){p.push(t.recoil);}
+  else if(trig==="agile-style-move"){p.push(t.agile);}
+  else if(trig==="strong-style-move"){p.push(t.strong);}
+  else if(trig==="tower-of-darkness"){p.push(t.towerDark);}
+  else if(trig==="tower-of-waters"){p.push(t.towerWater);}
+  else{p.push(trig.replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase()));} // readable fallback, never bare "Special"
   if(m.time)p.push("("+(t[m.time]||m.time)+")");
   if(m.rain)p.push(t.rain);
-  if(m.heldItem&&m.trigger!=="trade")p.push(t.hold(loc(m.heldItem)));
+  if(m.location&&trig==="use-item")p.push(t.at(loc(m.location)));
+  if(m.heldItem&&trig!=="trade")p.push(t.hold(loc(m.heldItem)));
   if(m.gender===1)p.push(t.f);
   if(m.gender===2)p.push(t.m);
   return p.join(" ");
 }
+// Does this method involve trading (→ Linking Cord note applies)?
+const isTrade=(m)=>m&&m.trigger==="trade";
+
+// Correctness overlay: distinct species that evolve ONLY from a regional form of the
+// parent (PokéAPI's chain can't express the source form). Keyed by target species id.
+// Sourced from Bulbapedia (Regional form / Trade Evolution). The region badge tells you
+// which form of the parent evolves — e.g. Meowth→Perrserker means *Galarian* Meowth.
+const REGIONAL_EVO={
+  863:{reg:"GALAR",method:{en:"Level 28",de:"Level 28",es:"Nivel 28"}},
+  862:{reg:"GALAR",method:{en:"Level 35 (night)",de:"Level 35 (Nacht)",es:"Nivel 35 (noche)"}},
+  865:{reg:"GALAR",method:{en:"Land 3 critical hits in one battle",de:"3 Volltreffer in einem Kampf",es:"3 críticos en un combate"}},
+  866:{reg:"GALAR",method:{en:"Level 42",de:"Level 42",es:"Nivel 42"}},
+  867:{reg:"GALAR",method:{en:"Take 49+ damage, pass under rock arch (Dusty Bowl)",de:"49+ Schaden nehmen, unter Felsbogen (Dusty Bowl)",es:"Recibir 49+ daño, bajo el arco (Cuenca Polvorienta)"}},
+  864:{reg:"GALAR",method:{en:"Level 38",de:"Level 38",es:"Nivel 38"}},
+  900:{reg:"HISUI",method:{en:"Use Black Augurite",de:"Schwarzaugit benutzen",es:"Usar Obsidiana Negra"}},
+  901:{reg:"HISUI",method:{en:"Use Peat Block (full moon)",de:"Torfblock benutzen (Vollmond)",es:"Usar Bloque de Turba (luna llena)"}},
+  902:{reg:"HISUI",method:{en:"Lose 294+ HP to recoil",de:"294+ KP durch Rückstoß verlieren",es:"Perder 294+ PS por retroceso"}},
+  903:{reg:"HISUI",method:{en:"Use Razor Claw (day)",de:"Scharfklaue benutzen (Tag)",es:"Usar Garra Afilada (día)"}},
+  904:{reg:"HISUI",method:{en:"Use Barb Barrage 20× (Strong style)",de:"20× Dornensalve (Stark-Stil)",es:"Usar Púas 20× (estilo fuerte)"}},
+  899:{reg:"HISUI",method:{en:"Use Psyshield Bash 20× (Agile style)",de:"20× Psychoschlag (Flink-Stil)",es:"Usar Escudo Psi 20× (estilo ágil)"}},
+  980:{reg:"PALDEA",method:{en:"Level 20",de:"Level 20",es:"Nivel 20"}},
+};
+// HTML for the method shown on an evolution arrow (applies overlay + Linking Cord tag)
+function methodHTML(child){
+  const ov=REGIONAL_EVO[child.id];
+  if(ov){const meth=ov.method[lang]||ov.method.en;
+    return `<div class="m"><span class="reg reg-${ov.reg.toLowerCase()}">${ov.reg}</span>${meth}</div>`;}
+  let h=`<div class="m">${composeMethod(child.method,lang)}`;
+  if(isTrade(child.method))h+=` <span class="lc" title="${GAME[lang].linkcord}">🔗</span>`;
+  return h+`</div>`;
+}
+function chainHasTrade(node){return (node.to||[]).some(c=>isTrade(c.method)||chainHasTrade(c));}
+const FORMBADGE={Mega:{c:"mega",t:"MEGA"},Gigantamax:{c:"gmax",t:"GMAX"},Alolan:{c:"alola",t:"ALOLA"},Galarian:{c:"galar",t:"GALAR"},Hisuian:{c:"hisui",t:"HISUI"},Paldean:{c:"paldea",t:"PALDEA"}};
 const TYPE_COLORS={normal:"#9fa19f",fire:"#e25822",water:"#2d74e0",electric:"#f0b800",grass:"#3aa84a",ice:"#6cd0d6",fighting:"#b02f22",poison:"#8a3fa0",ground:"#c7a23a",flying:"#8aa7e8",psychic:"#e84a7f",bug:"#8aa31f",rock:"#a89a4a",ghost:"#5a4a8a",dragon:"#4a46c7",dark:"#4a3f3a",steel:"#7a8a9a",fairy:"#e89ad0"};
 const TYPE_NAMES={
   en:{normal:"Normal",fire:"Fire",water:"Water",electric:"Electric",grass:"Grass",ice:"Ice",fighting:"Fighting",poison:"Poison",ground:"Ground",flying:"Flying",psychic:"Psychic",bug:"Bug",rock:"Rock",ghost:"Ghost",dragon:"Dragon",dark:"Dark",steel:"Steel",fairy:"Fairy"},
@@ -201,7 +282,7 @@ function listView(filter=""){
       <div class="types">${p.types.map(typeChip).join("")}</div>
     </div>`;
   }).join("")}</div>
-  <div class="foot">${DB.count} Pokémon · ${UI[lang].evo} · draft</div>`;
+  <div class="foot">${DB.count} Pokémon</div>`;
 }
 
 // render evolution tree recursively
@@ -216,12 +297,12 @@ function renderNode(node, currentId){
   if(node.to.length===1){
     const c=node.to[0];
     return `<div class="evoline">${mon}
-      <div class="arrow"><div class="m">${composeMethod(c.method,lang)}</div><div class="a">→</div></div>
+      <div class="arrow">${methodHTML(c)}<div class="a">→</div></div>
       ${renderNode(c,currentId)}</div>`;
   }
   // branching
   const branches=node.to.map(c=>`<div class="branch">
-      <div class="arrow"><div class="m">${composeMethod(c.method,lang)}</div><div class="a">→</div></div>
+      <div class="arrow">${methodHTML(c)}<div class="a">→</div></div>
       ${renderNode(c,currentId)}</div>`).join("");
   return `<div class="evoline">${mon}<div class="branches">${branches}</div></div>`;
 }
@@ -235,11 +316,18 @@ function detailView(id){
   const chain=p.chain!=null?DB.chains[p.chain]:null;
   const hasEvo=chain&&chain.to&&chain.to.length>0;
   const names=["en","de","es"].map(l=>`<div class="nrow"><b>${l.toUpperCase()}</b><span>${p.name[l]||"—"}</span></div>`).join("");
-  const forms=(p.forms&&p.forms.length)?`
+  const fc=p.forms||[];
+  const funcForms=fc.filter(f=>!(f.cat==="Form"&&f.cosmetic));
+  const cosForms=fc.filter(f=>f.cat==="Form"&&f.cosmetic);
+  const formCard=(f)=>`<div class="emon form">
+      <img loading="lazy" src="${f.sprite}" alt=""><small>${f.name[lang]||f.name.en}</small>
+      ${FORMBADGE[f.cat]?`<span class="reg reg-${FORMBADGE[f.cat].c}">${FORMBADGE[f.cat].t}</span>`:""}
+      <div class="types" style="margin-top:4px">${f.types.map(typeChip).join("")}</div></div>`;
+  const forms=fc.length?`
     <div class="sect">${UI[lang].forms}</div>
-    <div class="evo"><div class="evoline">${p.forms.map(f=>`
-      <div class="emon"><img src="${f.sprite}" alt=""><small>${f.name[lang]||f.name.en}</small>
-        <div class="types" style="margin-top:4px">${f.types.map(typeChip).join("")}</div></div>`).join("")}</div></div>`:"";
+    ${funcForms.length?`<div class="formgrid">${funcForms.map(formCard).join("")}</div>`:""}
+    ${cosForms.length?`<div class="coswrap"><div class="coslabel">+${cosForms.length} ${UI[lang].cosmetic}</div>
+      <div class="formgrid">${cosForms.map(f=>`<div class="emon form tiny"><img loading="lazy" src="${f.sprite}" alt=""><small>${f.name[lang]||f.name.en}</small></div>`).join("")}</div></div>`:""}`:"";
   const prev=neighbor(id,-1), next=neighbor(id,1);
   const navBtn=(nid,dir)=>nid?`<button class="navbtn" onclick="openMon(${nid})">${dir<0?"‹ ":""}${pad(nid)} ${nm(nid)}${dir>0?" ›":""}</button>`:`<span class="navbtn ghost"></span>`;
   app.innerHTML=`
@@ -257,6 +345,7 @@ function detailView(id){
     </div>
     <div class="sect primary">${UI[lang].evo}</div>
     <div class="evo evo-main">${hasEvo?`<div class="evoline">${renderNode(chain,id)}</div>`:`<div class="empty">${UI[lang].noevo}</div>`}</div>
+    ${hasEvo&&chainHasTrade(chain)?`<div class="gamenote">🔗 ${GAME[lang].linkcord}</div>`:""}
     ${forms}
     <div class="sect">${UI[lang].names}</div>
     <div class="names">${names}</div>
