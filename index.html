@@ -115,9 +115,9 @@
 
 <script>
 const UI = {
-  en:{search:"Search name…",names:"Names",evo:"Evolution",noevo:"Does not evolve",forms:"Forms & variants",cosmetic:"cosmetic variants",back:"Back"},
-  de:{search:"Name suchen…",names:"Namen",evo:"Entwicklung",noevo:"Entwickelt sich nicht",forms:"Formen & Varianten",cosmetic:"Design-Varianten",back:"Zurück"},
-  es:{search:"Buscar nombre…",names:"Nombres",evo:"Evolución",noevo:"No evoluciona",forms:"Formas y variantes",cosmetic:"variantes estéticas",back:"Atrás"},
+  en:{search:"Search name…",names:"Names",evo:"Evolution",noevo:"Does not evolve",forms:"Forms & variants",cosmetic:"cosmetic variants",back:"Back",book:"Print book"},
+  de:{search:"Name suchen…",names:"Namen",evo:"Entwicklung",noevo:"Entwickelt sich nicht",forms:"Formen & Varianten",cosmetic:"Design-Varianten",back:"Zurück",book:"Buch drucken"},
+  es:{search:"Buscar nombre…",names:"Nombres",evo:"Evolución",noevo:"No evoluciona",forms:"Formas y variantes",cosmetic:"variantes estéticas",back:"Atrás",book:"Imprimir libro"},
 };
 // composes an evolution method into a readable label per language, from structured data
 const M = {
@@ -282,7 +282,7 @@ function listView(filter=""){
       <div class="types">${p.types.map(typeChip).join("")}</div>
     </div>`;
   }).join("")}</div>
-  <div class="foot">${DB.count} Pokémon</div>`;
+  <div class="foot">${DB.count} Pokémon · <a href="print.html" style="color:var(--accent2)">🖨 ${UI[lang].book}</a></div>`;
 }
 
 // render evolution tree recursively

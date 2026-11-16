@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PokéWiki — Evolution Compendium (printable)</title>
+<style>
+  :root{--ink:#111;--grey:#666;--line:#ccc;--accent:#b8860b}
+  *{box-sizing:border-box}
+  body{margin:0;background:#f4f4f4;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:11px}
+  /* screen-only toolbar */
+  .toolbar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);
+    padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:9}
+  .toolbar b{color:var(--accent)}
+  .toolbar button,.toolbar select{font-size:13px;padding:7px 12px;border:1px solid var(--line);
+    border-radius:8px;background:#fff;cursor:pointer}
+  .toolbar .print{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+  .page{background:#fff;max-width:820px;margin:14px auto;padding:16mm 14mm;
+    box-shadow:0 1px 6px rgba(0,0,0,.15)}
+  /* cover */
+  .cover{text-align:center;display:flex;flex-direction:column;justify-content:center;min-height:240mm}
+  .cover h1{font-size:52px;margin:0;letter-spacing:2px}
+  .cover h1 span{color:var(--accent)}
+  .cover h2{font-size:20px;font-weight:500;color:var(--grey);margin:6px 0 26px;letter-spacing:3px;text-transform:uppercase}
+  .cover .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0}
+  .cover .row img{width:52px;height:52px;image-rendering:pixelated}
+  .cover p{max-width:460px;margin:8px auto;color:#333;line-height:1.5;font-size:13px}
+  .cover .meta{margin-top:30px;color:var(--grey);font-size:12px}
+  .legend{font-size:11px;color:#333;border:1px solid var(--line);border-radius:8px;
+    padding:10px 14px;max-width:520px;margin:18px auto;text-align:left;line-height:1.6}
+  .legend b{color:var(--accent)}
+  /* families */
+  h3.sec{font-size:15px;border-bottom:2px solid var(--accent);padding-bottom:4px;margin:0 0 10px;
+    color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+  .families{column-count:2;column-gap:14px}
+  .fam{break-inside:avoid;border:1px solid #e3e3e3;border-radius:7px;padding:6px 7px;margin:0 0 7px}
+  .line{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+  .u{text-align:center;min-width:52px}
+  .u img{width:40px;height:40px;image-rendering:pixelated;display:block;margin:0 auto}
+  .u .n{font-weight:700;font-size:10px;line-height:1.05;margin-top:1px}
+  .u .alt{font-size:8px;color:var(--grey);line-height:1.1}
+  .arr{font-size:8px;color:#333;text-align:center;min-width:46px;line-height:1.15}
+  .arr .mm{color:#8a6d00}
+  .arr .rg{display:inline-block;background:#eee;border-radius:3px;padding:0 3px;font-weight:700;font-size:7px}
+  /* singles grid */
+  .singles{column-count:5;column-gap:8px}
+  .sg{break-inside:avoid;text-align:center;margin-bottom:6px}
+  .sg img{width:38px;height:38px;image-rendering:pixelated;display:block;margin:0 auto}
+  .sg .n{font-size:9px;font-weight:600;line-height:1.05}
+  .sg .alt{font-size:7px;color:var(--grey)}
+  @media print{
+    body{background:#fff;font-size:10px}
+    .toolbar{display:none}
+    .page{box-shadow:none;margin:0;max-width:none;padding:0;width:100%}
+    .page+.page{page-break-before:always}
+    .families{column-count:3}
+    .singles{column-count:7}
+  }
+  @page{margin:12mm}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <b>PokéWiki book</b>
+  <label>Language&nbsp;
+    <select id="lang"><option value="en">English</option><option value="de">Deutsch</option><option value="es">Español</option></select>
+  </label>
+  <button class="print" onclick="window.print()">🖨 Print / Save PDF</button>
+  <span id="status" style="color:#888"></span>
+</div>
+<div id="out"></div>
+
+<script>
+const LANG_LABEL={en:"English",de:"Deutsch",es:"Español"};
+let lang="en";
+// --- compact evolution-method composer (mirrors the app) ---
+const M={
+  en:{lv:n=>"Lv. "+n,up:"Level up",friend:"Friendship",affection:"Affection",beauty:"Beauty",use:x=>x,trade:"Trade",hold:x=>"+ "+x,tradeFor:x=>"↔ "+x,knows:x=>"knows "+x,knowsType:x=>x+" move",at:x=>"@ "+x,with:x=>"+ "+x,withType:x=>"+ "+x,shed:"empty slot",rain:"rain",upside:"upside-down",day:"day",night:"night",crit:"3 crits",dmg:"take damage",recoil:"294 recoil",agile:"agile move ×20",strong:"strong move ×20",towerDark:"Tower of Darkness",towerWater:"Tower of Waters"},
+  de:{lv:n=>"Lv. "+n,up:"Level",friend:"Freundschaft",affection:"Zuneigung",beauty:"Schönheit",use:x=>x,trade:"Tausch",hold:x=>"+ "+x,tradeFor:x=>"↔ "+x,knows:x=>"kann "+x,knowsType:x=>x+"-Att.",at:x=>"@ "+x,with:x=>"+ "+x,withType:x=>"+ "+x,shed:"freier Platz",rain:"Regen",upside:"umgedreht",day:"Tag",night:"Nacht",crit:"3 Treffer",dmg:"Schaden",recoil:"294 Rückstoß",agile:"Flink ×20",strong:"Stark ×20",towerDark:"Turm d. Dunkelheit",towerWater:"Turm d. Wassers"},
+  es:{lv:n=>"Nv. "+n,up:"Subir nivel",friend:"Amistad",affection:"Cariño",beauty:"Belleza",use:x=>x,trade:"Intercambio",hold:x=>"+ "+x,tradeFor:x=>"↔ "+x,knows:x=>"sabe "+x,knowsType:x=>"mov. "+x,at:x=>"@ "+x,with:x=>"+ "+x,withType:x=>"+ "+x,shed:"hueco libre",rain:"lluvia",upside:"al revés",day:"día",night:"noche",crit:"3 críticos",dmg:"daño",recoil:"294 retroceso",agile:"ágil ×20",strong:"fuerte ×20",towerDark:"Torre Oscuridad",towerWater:"Torre Aguas"},
+};
+const REGIONAL_EVO={863:{reg:"GALAR",m:{en:"Lv. 28",de:"Lv. 28",es:"Nv. 28"}},862:{reg:"GALAR",m:{en:"Lv. 35 night",de:"Lv. 35 Nacht",es:"Nv. 35 noche"}},865:{reg:"GALAR",m:{en:"3 crits",de:"3 Treffer",es:"3 críticos"}},866:{reg:"GALAR",m:{en:"Lv. 42",de:"Lv. 42",es:"Nv. 42"}},867:{reg:"GALAR",m:{en:"take dmg + arch",de:"Schaden + Bogen",es:"daño + arco"}},864:{reg:"GALAR",m:{en:"Lv. 38",de:"Lv. 38",es:"Nv. 38"}},900:{reg:"HISUI",m:{en:"Black Augurite",de:"Schwarzaugit",es:"Obsidiana Negra"}},901:{reg:"HISUI",m:{en:"Peat Block",de:"Torfblock",es:"Bloque Turba"}},902:{reg:"HISUI",m:{en:"294 recoil",de:"294 Rückstoß",es:"294 retroceso"}},903:{reg:"HISUI",m:{en:"Razor Claw day",de:"Scharfklaue Tag",es:"Garra Afilada día"}},904:{reg:"HISUI",m:{en:"Barb Barrage ×20",de:"Dornensalve ×20",es:"Púas ×20"}},899:{reg:"HISUI",m:{en:"Psyshield ×20",de:"Psychoschlag ×20",es:"Escudo Psi ×20"}},980:{reg:"PALDEA",m:{en:"Lv. 20",de:"Lv. 20",es:"Nv. 20"}}};
+function loc(o){return o?(o[lang]||o.en):"";}
+function method(m,targetId){
+  const ov=REGIONAL_EVO[targetId];
+  if(ov)return `<span class="rg">${ov.reg}</span> ${ov.m[lang]||ov.m.en}`;
+  if(!m)return "";
+  const t=M[lang]||M.en,p=[],g=m.trigger;
+  if(g==="level-up"||g==="other"||!g){
+    if(m.level)p.push(t.lv(m.level));else if(m.friendship)p.push(t.friend);else if(m.affection)p.push(t.affection);
+    else if(m.beauty)p.push(t.beauty);else if(m.move)p.push(t.knows(loc(m.move)));else if(m.moveType)p.push(t.knowsType(loc(m.moveType)));
+    else if(m.upsideDown)p.push(t.upside);else if(m.location)p.push(t.at(loc(m.location)));
+    else if(m.partySpecies)p.push(t.with(loc(m.partySpecies)));else if(m.partyType)p.push(t.withType(loc(m.partyType)));else p.push(t.up);
+  }else if(g==="trade"){p.push(t.trade);if(m.heldItem)p.push(t.hold(loc(m.heldItem)));if(m.tradeSpecies)p.push(t.tradeFor(loc(m.tradeSpecies)));}
+  else if(g==="use-item")p.push(t.use(loc(m.item)));
+  else if(g==="shed")p.push(t.shed);else if(g==="three-critical-hits")p.push(t.crit);else if(g==="take-damage")p.push(t.dmg);
+  else if(g==="recoil-damage")p.push(t.recoil);else if(g==="agile-style-move")p.push(t.agile);else if(g==="strong-style-move")p.push(t.strong);
+  else if(g==="tower-of-darkness")p.push(t.towerDark);else if(g==="tower-of-waters")p.push(t.towerWater);
+  else p.push(g.replace(/-/g," "));
+  if(m.time)p.push(t[m.time]||m.time);if(m.rain)p.push(t.rain);if(m.heldItem&&g!=="trade")p.push(t.hold(loc(m.heldItem)));
+  if(m.gender===1)p.push("♀");if(m.gender===2)p.push("♂");
+  return p.join(" ");
+}
+
+let DB=null;
+const nm=(id)=>{const p=DB.pokemon[id];return p?(p.name[lang]||p.name.en):"#"+id;};
+const alt=(id)=>{const p=DB.pokemon[id];if(!p)return "";const o=["en","de","es"].filter(l=>l!==lang).map(l=>p.name[l]).filter(Boolean);return o.join(" · ");};
+const unit=(id)=>{const p=DB.pokemon[id];const s=p?p.sprite:`sprites/${id}.png`;
+  return `<div class="u"><img src="${s}"><div class="n">${nm(id)}</div><div class="alt">${alt(id)}</div></div>`;};
+
+// flatten a chain into printable segments (handles branches by stacking lines)
+function renderFamily(chain){
+  const lines=[];
+  function walk(node,prefixHTML){
+    if(!node.to||!node.to.length){lines.push(prefixHTML+unit(node.id));return;}
+    node.to.forEach((c,i)=>{
+      const seg=`<div class="arr"><div class="mm">${method(c.method,c.id)}</div>→</div>`;
+      walk(c, prefixHTML+unit(node.id)+seg);
+    });
+  }
+  // for a cleaner look, render root once then each path
+  walk(chain,"");
+  return `<div class="fam">${lines.map(l=>`<div class="line">${l}</div>`).join("")}</div>`;
+}
+
+function render(){
+  document.getElementById("status").textContent="";
+  const chains=DB.chains, pokemon=DB.pokemon;
+  // which chains have real evolution
+  const evoChains=[], singleIds=[];
+  const usedInChain=new Set();
+  for(const cid in chains){
+    const c=chains[cid];
+    const count=(function cnt(n){return 1+(n.to||[]).reduce((a,b)=>a+cnt(b),0);})(c);
+    (function mark(n){usedInChain.add(n.id);(n.to||[]).forEach(mark);})(c);
+    if(count>1) evoChains.push(c);
+  }
+  // singles = species not part of any multi-node chain
+  const multiIds=new Set();
+  evoChains.forEach(c=>(function mark(n){multiIds.add(n.id);(n.to||[]).forEach(mark);})(c));
+  for(const id in pokemon){ if(!multiIds.has(Number(id))) singleIds.push(Number(id)); }
+  singleIds.sort((a,b)=>a-b);
+  evoChains.sort((a,b)=>a.id-b.id);
+
+  const cover=`<div class="page cover">
+    <h1>Poké<span>Wiki</span></h1>
+    <h2>Evolution Compendium</h2>
+    <div class="row">${[1,4,7,25,133,150].map(i=>`<img src="${pokemon[i]?pokemon[i].sprite:''}">`).join("")}</div>
+    <p>A pocket reference to every Pokémon and how it evolves — names in <b>English</b>, <b>Deutsch</b> and <b>Español</b>, with the exact method and level for each stage.</p>
+    <div class="legend">
+      <b>How to read a line:</b> each family reads left → right. The small text on an arrow is the evolution method (level, stone, trade…).<br>
+      <b>Badges</b> like <span style="background:#eee;padding:0 3px;border-radius:3px">GALAR</span> mean only that regional form evolves this way (e.g. <i>Galarian</i> Meowth → Perrserker).<br>
+      <b>🔗 Trade</b> evolutions can also be done with a Linking Cord (Legends: Arceus, BDSP, Scarlet/Violet) — no trading needed.
+    </div>
+    <div class="meta">${DB.count} Pokémon · ${evoChains.length} evolution families · Gen I–IX<br>Data © PokéAPI / Pokémon · printed language: ${LANG_LABEL[lang]}</div>
+  </div>`;
+
+  const fams=`<div class="page"><h3 class="sec">Evolution Families</h3><div class="families">${evoChains.map(renderFamily).join("")}</div></div>`;
+  const singles=`<div class="page"><h3 class="sec">Single-stage Pokémon</h3><div class="singles">${singleIds.map(id=>`<div class="sg"><img src="${pokemon[id].sprite}"><div class="n">${nm(id)}</div><div class="alt">${alt(id)}</div></div>`).join("")}</div></div>`;
+
+  document.getElementById("out").innerHTML=cover+fams+singles;
+}
+
+document.getElementById("lang").addEventListener("change",(e)=>{lang=e.target.value;render();});
+(async()=>{
+  try{DB=await (await fetch("data/pokedex.json")).json();render();}
+  catch(e){document.getElementById("out").innerHTML="<div class='page'>Failed to load data: "+e+"</div>";}
+})();
+</script>
+</body>
+</html>
